@@ -3,6 +3,7 @@ package com.company;
 /*************************************************************************
  *************************************************************************/
 
+import java.awt.*;
 import java.util.Arrays;
 
 import edu.princeton.cs.algs4.*;
@@ -20,8 +21,9 @@ public class KdTree {
         private Node r; //the right/top subtree
         private boolean vertical;
 
-        public Node(Point2D p, Node l, Node r, boolean v) {
+        public Node(Point2D p, RectHV rect, Node l, Node r, boolean v) {
             this.p = p;
+            this.rect = rect;
             l = l;
             r = r;
             vertical = v;
@@ -47,28 +49,50 @@ public class KdTree {
     // add the point p to the set (if it is not already in the set)
     public void insert(Point2D p) {
 
-            root = insert(root, p, true);
+            root = insert(root, p, true, 0.0, 0.0, 1.0, 1.0);
 
     }
 
     ;
 
-    private Node insert(Node n, Point2D p, boolean isvertical) {
+    private Node insert(Node n, Point2D p, boolean isvertical, double x0,double y0, double x1, double y1) {
 
         // create node
         if (n == null) {
             size++;
-            return new Node(p, null, null, isvertical);
+            RectHV rect = new RectHV(x0, y0, x1,y1);
+            return new Node(p, rect, null, null, isvertical);
         }
         if(n.p.x() == p.x() && n.p.y() == p.y()) {
             return n;
         }
-        if (n.vertical && p.x() > n.p.x() || !n.vertical && p.y() < n.p.y()) {
+
+        if (n.vertical) {
+            double cmp = p.x() - n.p.x();
+            //if (p.x() < n.p.x()) {
+            if(cmp < 0){
+                n.l = insert(n.l, p, !isvertical, x0, y0, n.p.x(), y1);
+            }
+            else{
+                n.r = insert(n.r,p,!isvertical,n.p.x(),y0,x1,y1);
+            }
+        }
+        else {
+            double cmp = p.y() - n.p.y();
+            if (cmp < 0){
+            //if (p.y() < n.p.y()) {
+                n.l = insert(n.l, p, !isvertical, x0, y0, x1, n.p.y());
+            } else {
+                n.r = insert(n.r, p, !isvertical, x0, n.p.y(), x1, y1);
+            }
+        }
+
+        /*if (n.vertical && p.x() > n.p.x() || !n.vertical && p.y() < n.p.y()) {
             n.l = insert(n.l, p, !n.vertical);
         } else {
             n.r = insert(n.r, p, !n.vertical);
         }
-
+         */
         return n;
     }
 
@@ -89,8 +113,17 @@ public class KdTree {
             return true;
         }
         StdOut.print(n.p.x()+" = "+x+"\n"+n.p.y()+" = "+y+"\n\n");
-        if (n.vertical && x < n.p.x() || !n.vertical && y < n.p.y())
-            return contains(n.r , x, y);
+        if (n.vertical) {
+            if (x < n.p.x()) {
+                return contains(n.r, x, y);
+            }
+        }
+        if (y < n.p.y()){
+            return contains(n.r,x,y);
+        }
+
+             //x < n.p.x() || !n.vertical && y < n.p.y())
+            //return contains(n.r , x, y);
         else
             return contains(n.l, x, y);
 
@@ -110,8 +143,36 @@ public class KdTree {
 
     // a nearest neighbor in the set to p; null if set is empty
     public Point2D nearest(Point2D p) {
-        return p;
+        if (root == null){
+            return null;
+        }
+        return nearest(root, p, root.p, true);
     }
+
+    private Point2D nearest(Node n, Point2D p, Point2D closest, boolean vertical){
+        if(n == null) {
+            return closest;
+        }
+
+        if (n.p.distanceSquaredTo(p) < closest.distanceSquaredTo(p)){
+            closest = n.p;
+        }
+        if (n.rect.distanceSquaredTo(p) < closest.distanceSquaredTo(p)){
+            //closest = findsubtree(n.l.p, n.r.p);
+            if (!vertical && p.x() < n.p.x() || !vertical && p.y() < n.p.y()){
+                closest = nearest(n.l,p,closest,!vertical);
+                closest = nearest(n.r,p,closest, !vertical);
+            }
+            else{
+                closest = nearest(n.r,p,closest,!vertical);
+                closest = nearest(n.l,p,closest, !vertical);
+            }
+
+        }
+        return closest;
+    }
+
+
 
     /*******************************************************************************
      * Test client
@@ -127,8 +188,9 @@ public class KdTree {
             kdtree.insert(p);
             //brute.insert(p);
         }
-        Point2D p = new Point2D(0.19,0.57);
-        StdOut.print(kdtree.contains(p));
+        Point2D p = new Point2D(0.73,0.29);
+        StdOut.print(kdtree.contains(p)+"\n");
+        StdOut.print(kdtree.nearest(p));
         /*int nrOfRectangles = in.readInt();
         int nrOfPointsCont = in.readInt();
         int nrOfPointsNear = in.readInt();
