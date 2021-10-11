@@ -49,38 +49,36 @@ public class KdTree {
     // add the point p to the set (if it is not already in the set)
     public void insert(Point2D p) {
 
-            root = insert(root, p, true, 0.0, 0.0, 1.0, 1.0);
+        root = insert(root, p, true, 0.0, 0.0, 1.0, 1.0);
 
     }
 
     ;
 
-    private Node insert(Node n, Point2D p, boolean isvertical, double x0,double y0, double x1, double y1) {
+    private Node insert(Node n, Point2D p, boolean isvertical, double x0, double y0, double x1, double y1) {
 
         // create node
         if (n == null) {
             size++;
-            RectHV rect = new RectHV(x0, y0, x1,y1);
+            RectHV rect = new RectHV(x0, y0, x1, y1);
             return new Node(p, rect, null, null, isvertical);
         }
-        if(n.p.x() == p.x() && n.p.y() == p.y()) {
+        if (n.p.x() == p.x() && n.p.y() == p.y()) {
             return n;
         }
 
         if (n.vertical) {
             double cmp = p.x() - n.p.x();
             //if (p.x() < n.p.x()) {
-            if(cmp < 0){
+            if (cmp < 0) {
                 n.l = insert(n.l, p, !isvertical, x0, y0, n.p.x(), y1);
+            } else {
+                n.r = insert(n.r, p, !isvertical, n.p.x(), y0, x1, y1);
             }
-            else{
-                n.r = insert(n.r,p,!isvertical,n.p.x(),y0,x1,y1);
-            }
-        }
-        else {
+        } else {
             double cmp = p.y() - n.p.y();
-            if (cmp < 0){
-            //if (p.y() < n.p.y()) {
+            if (cmp < 0) {
+                //if (p.y() < n.p.y()) {
                 n.l = insert(n.l, p, !isvertical, x0, y0, x1, n.p.y());
             } else {
                 n.r = insert(n.r, p, !isvertical, x0, n.p.y(), x1, y1);
@@ -104,32 +102,34 @@ public class KdTree {
 
     private boolean contains(Node n, double x, double y) {
 
-        if (n == null){
+        if (n == null) {
             return false;
 
         }
-        if (n.p.x() == x && n.p.y() == y){
-            StdOut.print("TRUE: "+n.p.x()+" = "+x+"\n"+n.p.y()+" = "+y+"\n\n");
+        else if (n.p.x() == x && n.p.y() == y) {
             return true;
         }
-        StdOut.print(n.p.x()+" = "+x+"\n"+n.p.y()+" = "+y+"\n\n");
+        else{
+
+        }
         if (n.vertical) {
             if (x < n.p.x()) {
+                return contains(n.l, x, y);
+            }
+            else{
                 return contains(n.r, x, y);
             }
         }
-        if (y < n.p.y()){
-            return contains(n.r,x,y);
+        else {
+            if (y < n.p.y()) {
+                return contains(n.l, x, y);
+            }
+            else {
+                return contains(n.r, x, y);
+            }
         }
-
-             //x < n.p.x() || !n.vertical && y < n.p.y())
-            //return contains(n.r , x, y);
-        else
-            return contains(n.l, x, y);
-
-
-
     }
+
 
     // draw all of the points to standard draw
     public void draw() {
@@ -168,12 +168,15 @@ public class KdTree {
     }
 
     private void Iterable(Node n, RectHV rect, SET<Point2D> allPoint){
-        if ((n!=null) && (rect.intersects(n.rect)) && (rect.contains(n.p))){
-            allPoint.add(n.p);
+        if (n == null){
+            return;
         }
-        Iterable(n.l,rect,allPoint);
-        Iterable(n.r,rect,allPoint);
-
+        if (rect.contains(n.p))
+            allPoint.add(n.p);
+        if (rect.intersects(n.rect)){
+            Iterable(n.l,rect,allPoint);
+            Iterable(n.r,rect,allPoint);
+        }
     }
 
     // a nearest neighbor in the set to p; null if set is empty
@@ -216,6 +219,7 @@ public class KdTree {
         In in = new In("C:/Users/Tómas Orri/Downloads/KDtrees.txt");
         Out out = new Out();
         KdTree kdtree = new KdTree();
+        Stopwatch timer = new Stopwatch();
         for (int i = 0; !in.isEmpty(); i++) {
             double x = in.readDouble();
             double y = in.readDouble();
@@ -223,6 +227,8 @@ public class KdTree {
             kdtree.insert(p);
             //brute.insert(p);
         }
+        double time = timer.elapsedTime();
+        StdOut.print(time);
         kdtree.draw();
         Point2D p = new Point2D(0.73,0.29);
 
@@ -231,9 +237,7 @@ public class KdTree {
         /*int nrOfRectangles = in.readInt();
         int nrOfPointsCont = in.readInt();
         int nrOfPointsNear = in.readInt();
-
         RectHV[] rectangles = new RectHV[nrOfRectangles];
-
         Point2D[] pointsCont = new Point2D[nrOfPointsCont];
         Point2D[] pointsNear = new Point2D[nrOfPointsNear];
         for (int i = 0; i < nrOfRectangles; i++) {
@@ -272,14 +276,14 @@ public class KdTree {
         for (int i = 0; i < nrOfPointsCont; i++) {
             out.println((i + 1) + ": " + set.contains(pointsCont[i]));
         }
-
         out.println("Nearest test:");
         for (int i = 0; i < nrOfPointsNear; i++) {
             out.println((i + 1) + ": " + set.nearest(pointsNear[i]));
         }
-
         out.println();
         */
+
+
 
     }
 }

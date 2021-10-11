@@ -1,6 +1,5 @@
 package com.company;
 
-//hvernig maður ýtrar í gegnum for (Point2d p: SET){}
 
 /****************************************************************************
  *  Compilation:  javac PointSET.java
@@ -78,26 +77,24 @@ import edu.princeton.cs.algs4.RectHV;
                 // a nearest neighbor in the set to p; null if set is empty
                 public Point2D nearest(Point2D p) {
                         Point2D nearestPoint = null;
-                        double smallDist = Double.POSITIVE_INFINITY;
+                        double smallestDist = 1000000;
                         if (SET.size() == 0) {
                                 return null;
                         } else {
                                 for (Point2D q : SET) {
-                                        if (nearestPoint == null || p.distanceTo(q) <= smallDist) {
+                                        if (p!= q && (p.distanceTo(q) <= smallestDist)) {
+                                                smallestDist = p.distanceTo(q);
                                                 nearestPoint = p;
-                                                smallDist = p.distanceTo(q);
 
                                         }
                                 }
                                 return nearestPoint;
-
-
                         }
+
 
                 }
 
-                public static void main(String[] args) {
-                        String filename = args[0];
+                /*public static void main(String[] args) {
                         In in = new In();
                         Out out = new Out();
                         int nrOfRectangles = in.readInt();
@@ -150,22 +147,6 @@ import edu.princeton.cs.algs4.RectHV;
                         }
                         out.println();
                 }
+
+                 */
                 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
