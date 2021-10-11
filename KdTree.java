@@ -133,12 +133,47 @@ public class KdTree {
 
     // draw all of the points to standard draw
     public void draw() {
-
+        draw(root, true);
     }
 
+    private void draw(Node node, boolean drawVert) {
+        if (node == null) return;
+        // Draw point
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.setPenRadius(0.01);
+        node.p.draw();
+        // Draw vertical line with x-coordinates of the point and y-coordinates
+        // of the parent rectangle
+        if (drawVert) {
+            StdDraw.setPenColor(StdDraw.RED);
+            StdDraw.setPenRadius();
+            StdDraw.line(node.p.x(), node.rect.ymin(), node.p.x(), node.rect.ymax());
+        }
+        // Draw horizontal line with y-coordinates of the point and x-coordinates
+        // of the parent rectangle
+        else {
+            StdDraw.setPenColor(StdDraw.BLUE);
+            StdDraw.setPenRadius();
+            StdDraw.line(node.rect.xmin(), node.p.y(), node.rect.xmax(), node.p.y());
+        }
+        // Draw subtrees
+        draw(node.l, !drawVert);
+        draw(node.r, !drawVert);
+    }
     // all points in the set that are inside the rectangle
     public Iterable<Point2D> range(RectHV rect) {
-        return null;
+        SET<Point2D> allPoint = new SET<Point2D>();
+        Iterable(root, rect, allPoint);
+        return allPoint;
+    }
+
+    private void Iterable(Node n, RectHV rect, SET<Point2D> allPoint){
+        if ((n!=null) && (rect.intersects(n.rect)) && (rect.contains(n.p))){
+            allPoint.add(n.p);
+        }
+        Iterable(n.l,rect,allPoint);
+        Iterable(n.r,rect,allPoint);
+
     }
 
     // a nearest neighbor in the set to p; null if set is empty
@@ -188,7 +223,9 @@ public class KdTree {
             kdtree.insert(p);
             //brute.insert(p);
         }
+        kdtree.draw();
         Point2D p = new Point2D(0.73,0.29);
+
         StdOut.print(kdtree.contains(p)+"\n");
         StdOut.print(kdtree.nearest(p));
         /*int nrOfRectangles = in.readInt();
